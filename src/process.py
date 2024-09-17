@@ -5,14 +5,14 @@ import numpy as np
 # params
 CANNY_THRESHOLD1 = 100.0
 CANNY_THRESHOLD2 = 200.0
-MIN_CONTOUR_AREA = 600.0
-MIN_CONTOUR_ARC_LEN = 50.0
+MIN_CONTOUR_AREA = 200.0
+MIN_CONTOUR_ARC_LEN = 100.0
 MIN_CONTOUR_CIRCULARITY = 0.5
 MAX_CONTOUR_CIRCULARITY = 1.5
 DILATE_KERNEL_SIZE = (5,5)
 DILATE_ITERATION_NUM = 1
 DENOISE_KERNEL_SIZE = (5,5)
-DENOISE_SIGMA_X = 1
+DENOISE_SIGMA_X = 0.001
 
 def load_img(path: str) -> cv2.Mat:
     try:
@@ -42,9 +42,11 @@ def filter_contour(contours: Sequence[cv2.Mat]) -> Sequence[cv2.Mat]:
         area = cv2.contourArea(contour)
         arc_length = cv2.arcLength(contour, True)
         if area >= MIN_CONTOUR_AREA and arc_length >= MIN_CONTOUR_ARC_LEN:
+            # filtered_contours.append(contour)
+            # continue
             # 2. filter by circle-like shape
             circularity = 4 * np.pi * (area / np.power(arc_length, 2))
-            if MIN_CONTOUR_CIRCULARITY <= circularity <= MAX_CONTOUR_CIRCULARITY:
+            if not (MIN_CONTOUR_CIRCULARITY <= circularity <= MAX_CONTOUR_CIRCULARITY):
                 filtered_contours.append(contour)
     print(f"origin contour num = {len(contours)}, filtered num = {len(filtered_contours)}")
     return filtered_contours

@@ -3,7 +3,7 @@ from process import *
 
 
 if __name__ == '__main__':
-    img = load_img('../assets/input/img.jpeg')
+    img = load_img('../assets/input/demo.jpg')
     gray_img = gbr_to_gray(img)
     denoised_img = denoise_img(gray_img)
     contours = find_contour_by_canny(denoised_img)

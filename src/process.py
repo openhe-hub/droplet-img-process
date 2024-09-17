@@ -1,3 +1,4 @@
+import csv
 from typing import Sequence
 import cv2
 import numpy as np
@@ -66,6 +67,13 @@ def filter_contour(contours: Sequence[cv2.Mat]) -> Sequence[cv2.Mat]:
         #         filtered_contours.append(contour)
     print(f"origin contour num = {len(contours)}, filtered num = {len(filtered_contours)}")
     return filtered_contours
+
+def save_contour(contour: cv2.Mat, path: str):
+    with open(path, mode='w', newline='') as file:
+        writer = csv.writer(file)
+        for point in contour:
+            x, y = point[0]
+            writer.writerow([x, y])
 
 def denoise_img(origin_img: cv2.Mat) -> cv2.Mat:
     return cv2.GaussianBlur(origin_img, DENOISE_KERNEL_SIZE, DENOISE_SIGMA_X)

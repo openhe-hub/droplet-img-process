@@ -1,6 +1,7 @@
 import cv2
 from process import *
 from math_utils import *
+import droplet
 
 # params
 debug = False
@@ -18,9 +19,9 @@ def detect_once(img: cv2.Mat, background_img: cv2.Mat, i: int):
     contour_raw_img = img.copy()
     cv2.drawContours(contour_img, contours, -1, (0, 255, 0), 2)
     cv2.drawContours(contour_raw_img, contours, -1, (0, 255, 0), 2)
-    [x,y], r = circle_regression(contours[0])
-    cv2.circle(contour_raw_img, (x, y), r, (0, 255, 255), 2)
-    cv2.circle(contour_raw_img, (x,y), 1, (0, 255, 255), 3)
+    circle = circle_regression(contours[0])
+    cv2.circle(contour_raw_img, circle.center, circle.radius, (0, 255, 255), 2)
+    cv2.circle(contour_raw_img, circle.center, 1, (0, 255, 255), 3)
 
     if debug:
         # display result
@@ -33,9 +34,10 @@ def detect_once(img: cv2.Mat, background_img: cv2.Mat, i: int):
         cv2.waitKey(0)
         cv2.destroyAllWindows()
     
-    cv2.imwrite(f'../assets/output_dir/contours{i+1}.jpg', contour_img)
-    cv2.imwrite(f'../assets/output_dir/contours{i+1}_on_raw.jpg', contour_raw_img)
-    save_contour(contours[0], f'../assets/output_dir/contours{i+1}_pt.csv')
+    # cv2.imwrite(f'../assets/output_dir/contours{i+1}.jpg', contour_img)
+    cv2.imwrite(f'../assets/output_dir/contour_{i+1}.jpg', contour_raw_img)
+    # save_contour(contours[0], f'../assets/output_dir/contours{i+1}_pt.csv')
+    droplet.save_droplet_data(contours[0], circle, i)
 
 if __name__ == '__main__':
     for i in range(size):

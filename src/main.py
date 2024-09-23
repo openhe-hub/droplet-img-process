@@ -2,6 +2,7 @@ import cv2
 from process import *
 from math_utils import *
 import droplet
+import folder_handler
 
 # params
 debug = False
@@ -40,7 +41,11 @@ def detect_once(img: cv2.Mat, background_img: cv2.Mat, i: int):
     droplet.save_droplet_data(contours[0], circle, i)
 
 if __name__ == '__main__':
-    for i in range(size):
-        img = load_img(f'../assets/input_dir/{filename_prefix}{i+1}.jpg')
-        background_img = load_img('../assets/input_dir/background.jpg')
-        detect_once(img, background_img, i)
+    folder_path = r'/media/zhewen/d1/records/Drop Impact on Rough Surfaces/S1-W-18G-40cm-OG1-1_C001H001S0001'
+    result_path = r'/media/zhewen/d1/records/Drop Impact on Rough Surfaces/results/S1-W-18G-40cm-OG1-1_C001H001S0001'
+    fd = folder_handler.FolderHandler(folder_path, result_path)
+    fd.exec()
+    # for i in range(size):
+    #     img = load_img(f'../assets/input_dir/{filename_prefix}{i+1}.jpg')
+    #     background_img = load_img('../assets/input_dir/background.jpg')
+    #     detect_once(img, background_img, i)

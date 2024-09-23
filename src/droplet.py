@@ -21,7 +21,7 @@ class Droplet:
     circle_center: List[int] = field(default_factory=list)
     circle_radius: float = 0.0
 
-def save_droplet_data(contour: cv2.Mat, circle: RegressionCircle, i: int) -> Droplet:
+def save_droplet_data(contour: cv2.Mat, circle: RegressionCircle, file_path: str, i: int) -> Droplet:
     droplet = Droplet(id=i)
     # save contour
     contour_pts = []
@@ -38,7 +38,7 @@ def save_droplet_data(contour: cv2.Mat, circle: RegressionCircle, i: int) -> Dro
     droplet.circle_radius = circle.radius
     # dump to json
     droplet_dict = asdict(droplet)
-    with open(f'../assets/output_dir/labels_{i}.json', 'w') as f:
+    with open(f'{file_path}', 'w') as f:
         json.dump(droplet_dict, f, indent=4)
 
 def calc_area(contour: cv2.Mat) -> float:

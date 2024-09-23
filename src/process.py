@@ -45,8 +45,8 @@ def find_contour_by_canny(origin_img: cv2.Mat) -> Sequence[cv2.Mat]:
     edges = dilate_edges(edges)
     edges = close_edges(edges)
     contours, hierarchy = cv2.findContours(edges, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
-    print(f'contour coordinates: {contours}')
-    print(f'hierarchy map: {hierarchy}')
+    # print(f'contour coordinates: {contours}')
+    # print(f'hierarchy map: {hierarchy}')
     return contours
 
 def filter_contour(contours: Sequence[cv2.Mat]) -> Sequence[cv2.Mat]:
@@ -65,7 +65,7 @@ def filter_contour(contours: Sequence[cv2.Mat]) -> Sequence[cv2.Mat]:
         #     circularity = 4 * np.pi * (area / np.power(arc_length, 2))
         #     if not (MIN_CONTOUR_CIRCULARITY <= circularity <= MAX_CONTOUR_CIRCULARITY):
         #         filtered_contours.append(contour)
-    print(f"origin contour num = {len(contours)}, filtered num = {len(filtered_contours)}")
+    # print(f"origin contour num = {len(contours)}, filtered num = {len(filtered_contours)}")
     return filtered_contours
 
 def save_contour(contour: cv2.Mat, path: str):

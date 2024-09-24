@@ -1,0 +1,5 @@
+attr==0.3.2
+loguru==0.7.2
+numpy==1.24.4
+opencv_python==4.10.0.84
+scipy==1.14.1

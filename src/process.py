@@ -27,7 +27,6 @@ def load_img(path: str) -> cv2.Mat:
 
 def diff_img(img1: cv2.Mat, img2: cv2.Mat) -> cv2.Mat:
     diff = cv2.absdiff(img1, img2)
-    cv2.imshow('diff', diff)
     return diff
 
 def gbr_to_gray(origin_img: cv2.Mat) -> cv2.Mat:

@@ -1,4 +1,5 @@
 import os
+import json
 
 import cv2
 
@@ -32,10 +33,10 @@ class FolderHandler:
         for idx, file in enumerate(self.files):
             if idx == 0: continue # skip the background one
             img = process.load_img(f'{self.folder_path}/{file}')
-            self.exec_once(img, idx + 1)
-            logger.log(f'processing {file} finished')
+            self.exec_once(img, idx + 1, file)
+            logger.info(f'processing {file} finished')
 
-    def exec_once(self, img: cv2.Mat, idx: int):
+    def exec_once(self, img: cv2.Mat, idx: int, filename: str):
         _diff_img = process.diff_img(img, self.background_img)
         gray_img = process.gbr_to_gray(_diff_img)
         binary_img = process.gbr_to_binary(gray_img)
@@ -44,6 +45,7 @@ class FolderHandler:
         contours = process.filter_contour(contours)
         if len(contours) == 0:
             logger.warning('no contour found')
+            self.output_null(img, idx, filename)
             return
         contour_img = cv2.cvtColor(binary_img, cv2.COLOR_GRAY2BGR)
         contour_raw_img = img.copy()
@@ -64,5 +66,10 @@ class FolderHandler:
             cv2.waitKey(0)
             cv2.destroyAllWindows()
 
-        cv2.imwrite(f'{self.output_folder}/contour_{idx+1}.jpg', contour_raw_img)
-        _droplet = droplet.save_droplet_data(contours[0], circle, f'{self.output_folder}/params_{idx+1}.json', idx)
+        cv2.imwrite(f'{self.output_folder}/contour_{filename}.jpg', contour_raw_img)
+        _droplet = droplet.save_droplet_data(contours[0], circle, f'{self.output_folder}/params_{filename}.json', idx)
+
+    def output_null(self, img: cv2.Mat, idx: int, filename: str):
+        cv2.imwrite(f'{self.output_folder}/contour_{filename}.jpg', img)
+        with open(f'{self.output_folder}/params_{filename}.json', 'w') as f:
+            json.dump({}, f, indent=4)

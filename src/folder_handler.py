@@ -9,6 +9,9 @@ import droplet
 
 from loguru import logger
 
+from droplet import Droplet
+
+
 class FolderHandler:
     def __init__(self, folder_path: str, output_folder: str, img_format: str = 'jpg', background_idx: int = 1, debug: bool = False):
         self.folder_path: str = folder_path
@@ -20,10 +23,11 @@ class FolderHandler:
         self.background_idx: int = background_idx
         self.background_img: cv2 =  self.set_background_img()
         self.debug: bool = debug
+        self.is_fell: bool = False
 
     def list_img_files(self) -> [str]:
         files = os.listdir(self.folder_path)
-        jpg_files = [file for file in files if file.endswith(self.img_format)]
+        jpg_files = sorted([file for file in files if file.endswith(self.img_format)])
         return jpg_files
 
     def set_background_img(self) -> cv2.Mat:
@@ -33,10 +37,11 @@ class FolderHandler:
         for idx, file in enumerate(self.files):
             if idx == 0: continue # skip the background one
             img = process.load_img(f'{self.folder_path}/{file}')
-            self.exec_once(img, idx + 1, file)
+            _droplet = self.exec_once(img, idx + 1, file)
+            self.droplets.append(_droplet)
             logger.info(f'processing {file} finished')
 
-    def exec_once(self, img: cv2.Mat, idx: int, filename: str):
+    def exec_once(self, img: cv2.Mat, idx: int, filename: str) -> Droplet:
         _diff_img = process.diff_img(img, self.background_img)
         gray_img = process.gbr_to_gray(_diff_img)
         binary_img = process.gbr_to_binary(gray_img)
@@ -66,8 +71,15 @@ class FolderHandler:
             cv2.waitKey(0)
             cv2.destroyAllWindows()
 
+        _droplet = droplet.save_droplet_data(contours[0], circle, f'{self.output_folder}/params_{filename}.json', idx, self.droplets, self.is_fell)
+        # add text
+        if _droplet is not None:
+            cv2.putText(contour_raw_img, f'v={_droplet.velocity}', (50, 50), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 2)
+            cv2.putText(contour_raw_img, f'fall={_droplet.is_fell}', (50, 100), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 2)
+        #
+        self.is_fell = _droplet.is_fell
         cv2.imwrite(f'{self.output_folder}/contour_{filename}.jpg', contour_raw_img)
-        _droplet = droplet.save_droplet_data(contours[0], circle, f'{self.output_folder}/params_{filename}.json', idx)
+        return _droplet
 
     def output_null(self, img: cv2.Mat, idx: int, filename: str):
         cv2.imwrite(f'{self.output_folder}/contour_{filename}.jpg', img)

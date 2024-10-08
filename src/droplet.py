@@ -21,7 +21,8 @@ class Droplet:
     circle_center: List[int] = field(default_factory=list)
     circle_radius: float = 0.0
 
-def save_droplet_data(contour: cv2.Mat, circle: RegressionCircle, file_path: str, i: int) -> Droplet:
+def save_droplet_data(contour: cv2.Mat, circle: RegressionCircle, file_path: str, i: int, prev_droplets: List[Droplet]
+                      ,is_fell: bool) -> Droplet:
     droplet = Droplet(id=i)
     # save contour
     contour_pts = []
@@ -36,10 +37,21 @@ def save_droplet_data(contour: cv2.Mat, circle: RegressionCircle, file_path: str
     # save regression circle
     droplet.circle_center = circle.center
     droplet.circle_radius = circle.radius
+    # calc the expand velocity
+    if prev_droplets == [] or prev_droplets[-1] is None or i < 30:
+        droplet.velocity = 0.0
+    else:
+        droplet.velocity = calc_velocity(droplet.circle_radius, prev_droplets[-1].circle_radius, 1.0)
+    # judge if fall
+    if prev_droplets == [] or prev_droplets[-1] is None or i < 30:
+        droplet.is_fell = is_fell
+    else:
+        droplet.is_fell = judge_if_fall(droplet.velocity, prev_droplets[-1].is_fell)
     # dump to json
     droplet_dict = asdict(droplet)
     with open(f'{file_path}', 'w') as f:
         json.dump(droplet_dict, f, indent=4)
+    return droplet
 
 def calc_area(contour: cv2.Mat) -> float:
     return cv2.contourArea(contour)
@@ -47,3 +59,14 @@ def calc_area(contour: cv2.Mat) -> float:
 def calc_circumstance(contour: cv2.Mat) -> float:
     return cv2.arcLength(contour, closed=True)
 
+def calc_velocity(curr_radius: float, prev_radius: float, delta_t: float) -> float:
+    return (curr_radius - prev_radius) / delta_t
+
+def judge_if_fall(velocity: float, prev_if_fall) -> bool:
+    if not prev_if_fall and velocity > 5.0:
+        print(velocity)
+        return True
+    elif prev_if_fall:
+        return True
+    else:
+        return False

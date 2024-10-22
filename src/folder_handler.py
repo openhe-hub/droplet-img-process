@@ -10,6 +10,7 @@ import droplet
 from loguru import logger
 
 from droplet import Droplet
+from color_filter import ColorFilter
 
 
 class FolderHandler:
@@ -37,12 +38,14 @@ class FolderHandler:
         for idx, file in enumerate(self.files):
             if idx == 0: continue # skip the background one
             img = process.load_img(f'{self.folder_path}/{file}')
-            _droplet = self.exec_once(img, idx + 1, file)
+            _droplet = self.exec_once(img, idx + 1, file.split('.')[0])
             self.droplets.append(_droplet)
             logger.info(f'processing {file} finished')
 
     def exec_once(self, img: cv2.Mat, idx: int, filename: str) -> Droplet:
         _diff_img = process.diff_img(img, self.background_img)
+        # color_filter = ColorFilter()
+        # filtered_img = color_filter(_diff_img)
         gray_img = process.gbr_to_gray(_diff_img)
         binary_img = process.gbr_to_binary(gray_img)
         denoised_img = process.denoise_img(binary_img)
@@ -52,9 +55,9 @@ class FolderHandler:
             logger.warning('no contour found')
             self.output_null(img, idx, filename)
             return
-        contour_img = cv2.cvtColor(binary_img, cv2.COLOR_GRAY2BGR)
+        # contour_img = cv2.cvtColor(filtered_img, cv2.COLOR_GRAY2BGR)
         contour_raw_img = img.copy()
-        cv2.drawContours(contour_img, contours, -1, (0, 255, 0), 2)
+        # cv2.drawContours(contour_img, contours, -1, (0, 255, 0), 2)
         cv2.drawContours(contour_raw_img, contours, -1, (0, 255, 0), 2)
         circle = math_utils.circle_regression(contours[0])
         cv2.circle(contour_raw_img, circle.center, circle.radius, (0, 255, 255), 2)
@@ -63,10 +66,8 @@ class FolderHandler:
         if self.debug:
             # display result
             cv2.imshow('origin', img)
-            cv2.imshow('gray', gray_img)
-            cv2.imshow('binary', binary_img)
-            cv2.imshow('denoised', denoised_img)
-            cv2.imshow('contours', contour_img)
+            # cv2.imshow('color_filtered', filtered_img)
+            cv2.imshow('contours', contour_raw_img)
 
             cv2.waitKey(0)
             cv2.destroyAllWindows()

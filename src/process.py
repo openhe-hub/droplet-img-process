@@ -4,10 +4,10 @@ import cv2
 import numpy as np
 
 # params
-CANNY_THRESHOLD1 = 50.0
-CANNY_THRESHOLD2 = 150.0
+CANNY_THRESHOLD1 = 100.0
+CANNY_THRESHOLD2 = 200.0
 MIN_CONTOUR_AREA = 1500.0
-MIN_CONTOUR_ARC_LEN = 100.0
+MIN_CONTOUR_ARC_LEN = 80.0
 MIN_CONTOUR_CIRCULARITY = 0.5
 MAX_CONTOUR_CIRCULARITY = 1.5
 DILATE_KERNEL_SIZE = (3,3)
@@ -16,7 +16,7 @@ DENOISE_KERNEL_SIZE = (7,7)
 DENOISE_SIGMA_X = 1.0
 CLOSE_KERNEL_SIZE = (3,3)
 CLOSE_ITERATION_NUM = 1
-BINARY_THRESHOLD = 60
+BINARY_THRESHOLD = 50
 
 def load_img(path: str) -> cv2.Mat:
     try:
@@ -41,8 +41,8 @@ def gbr_to_binary(origin_img: cv2.Mat) -> cv2.Mat:
 
 def find_contour_by_canny(origin_img: cv2.Mat) -> Sequence[cv2.Mat]:
     edges = cv2.Canny(origin_img, CANNY_THRESHOLD1, CANNY_THRESHOLD2)
-    edges = dilate_edges(edges)
-    edges = close_edges(edges)
+    # edges = dilate_edges(edges)
+    # edges = close_edges(edges)
     contours, hierarchy = cv2.findContours(edges, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
     # print(f'contour coordinates: {contours}')
     # print(f'hierarchy map: {hierarchy}')
@@ -55,6 +55,7 @@ def filter_contour(contours: Sequence[cv2.Mat]) -> Sequence[cv2.Mat]:
     for contour in contours:
         # 1. filter by area & circumstance
         area = cv2.contourArea(contour)
+        length = cv2.arcLength(contour, closed=True)
         if area == areas[0]:
             filtered_contours.append(contour)
             break

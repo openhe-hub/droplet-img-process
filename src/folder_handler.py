@@ -2,6 +2,7 @@ import os
 import json
 
 import cv2
+from pygments.styles.dracula import background
 
 import process
 import math_utils
@@ -10,7 +11,7 @@ import droplet
 from loguru import logger
 
 from droplet import Droplet
-from color_filter import ColorFilter
+from finger_handler import handle_finger
 
 
 class FolderHandler:
@@ -34,9 +35,9 @@ class FolderHandler:
     def set_background_img(self) -> cv2.Mat:
         return process.load_img(f'{self.folder_path}/{self.files[self.background_idx]}')
 
-    def exec(self):
+    def exec(self, start_idx, end_idx):
         for idx, file in enumerate(self.files):
-            if idx == 0: continue # skip the background one
+            if idx < start_idx or idx > end_idx: continue # skip the background one
             img = process.load_img(f'{self.folder_path}/{file}')
             _droplet = self.exec_once(img, idx + 1, file.split('.')[0])
             self.droplets.append(_droplet)
@@ -72,14 +73,17 @@ class FolderHandler:
             cv2.waitKey(0)
             cv2.destroyAllWindows()
 
-        _droplet = droplet.save_droplet_data(contours[0], circle, f'{self.output_folder}/params_{filename}.json', idx, self.droplets, self.is_fell)
+        _droplet = droplet.gen_droplet_data(contours[0], circle, idx, self.droplets, self.is_fell)
+        _droplet, result_img = handle_finger(_droplet, img, contour_raw_img, self.background_img)
+        droplet.save_droplet_data(_droplet, f'{self.output_folder}/params_{filename}.json')
         # add text
         if _droplet is not None:
-            cv2.putText(contour_raw_img, f'v={_droplet.velocity}', (50, 50), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 2)
-            cv2.putText(contour_raw_img, f'fall={_droplet.is_fell}', (50, 100), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 2)
+            cv2.putText(result_img, f'v={_droplet.velocity}', (50, 50), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 2)
+            cv2.putText(result_img, f'fall={_droplet.is_fell}', (50, 100), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 2)
         #
         self.is_fell = _droplet.is_fell
-        cv2.imwrite(f'{self.output_folder}/contour_{filename}.jpg', contour_raw_img)
+        cv2.imwrite(f'{self.output_folder}/raw_{filename}.jpg', img)
+        cv2.imwrite(f'{self.output_folder}/result_{filename}.jpg', result_img)
         return _droplet
 
     def output_null(self, img: cv2.Mat, idx: int, filename: str):

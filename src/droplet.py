@@ -21,7 +21,7 @@ class Droplet:
     circle_center: List[int] = field(default_factory=list)
     circle_radius: float = 0.0
 
-def save_droplet_data(contour: cv2.Mat, circle: RegressionCircle, file_path: str, i: int, prev_droplets: List[Droplet]
+def gen_droplet_data(contour: cv2.Mat, circle: RegressionCircle, i: int, prev_droplets: List[Droplet]
                       ,is_fell: bool) -> Droplet:
     droplet = Droplet(id=i)
     # save contour
@@ -47,6 +47,10 @@ def save_droplet_data(contour: cv2.Mat, circle: RegressionCircle, file_path: str
         droplet.is_fell = is_fell
     else:
         droplet.is_fell = judge_if_fall(droplet.velocity, prev_droplets[-1].is_fell)
+
+    return droplet
+
+def save_droplet_data(droplet: Droplet, file_path):
     # dump to json
     droplet_dict = asdict(droplet)
     with open(f'{file_path}', 'w') as f:

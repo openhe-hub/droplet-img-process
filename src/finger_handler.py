@@ -1,10 +1,9 @@
 import json
-from math import factorial
-
 import cv2
 import numpy as np
 
-from src.process import dilate_edges, close_edges
+from process import dilate_edges, close_edges
+from src.droplet import Droplet
 
 id = 1
 raw_path = f'../assets/case{id}/raw_input.jpg'
@@ -38,12 +37,12 @@ def remove_color_from_image(image, coord, radius, tolerance=30):
 
 def find_contours(img, render_img):
     gray_image = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-    _, binary_image = cv2.threshold(gray_image, 40, 255, cv2.THRESH_BINARY)
-    cv2.imshow('binary', binary_image)
+    _, binary_image = cv2.threshold(gray_image, 30, 255, cv2.THRESH_BINARY)
+    # cv2.imshow('binary', binary_image)
     kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (3, 3))
     binary_image = cv2.morphologyEx(binary_image, cv2.MORPH_CLOSE, kernel)
     binary_image = cv2.GaussianBlur(binary_image, (5, 5), sigmaX=1.0)
-    cv2.imshow('binary-2', binary_image)
+    # cv2.imshow('binary-2', binary_image)
     contours, _ = cv2.findContours(binary_image, cv2.RETR_TREE, cv2.CHAIN_APPROX_NONE)
 
     # 查找圆度最高的轮廓
@@ -52,9 +51,9 @@ def find_contours(img, render_img):
     for contour in contours:
         area = cv2.contourArea(contour)
         perimeter = cv2.arcLength(contour, True)
-        if perimeter < 500 or area < 500 or area > 80000:  # 避免除以零
+        if perimeter < 500 or area < 20000 or area > 80000:  # 避免除以零
             continue
-        print(area)
+        # print(area)
         filtered_contour.append(contour)
         # circularity = 4 * np.pi * (area / (perimeter * perimeter))  # 计算圆度
         # # print(circularity)
@@ -62,7 +61,7 @@ def find_contours(img, render_img):
         #     highest_circularity = circularity
         #     filtered_contour = [contour]
 
-    print(len(contours))
+    # print(len(contours))
     cv2.drawContours(render_img, filtered_contour, -1, (0, 255, 255), 2)  # 绿色线条
     return render_img
 
@@ -81,7 +80,15 @@ def find_finger(coords, center, radius, render_img, dist_thres = 2):
             if if_at_finger:
                 if_at_finger = False
     cv2.putText(render_img, f'FINGER_NUM = {finger_cnt}', (150, 50), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 255), 2)
-    return render_img
+    return finger_cnt, render_img
+
+def handle_finger(droplet: Droplet, raw_img: cv2.Mat, input: cv2.Mat, background: cv2.Mat) -> [Droplet, cv2.Mat]:
+    diff1 = cv2.absdiff(raw_img, background)
+    diff2 = remove_color_from_image(diff1, droplet.circle_center, droplet.circle_radius, tolerance=tolerance)
+    result = find_contours(diff2, input)
+    finger_cnt, finger_img = find_finger(droplet.contour, droplet.circle_center, droplet.circle_radius, result)
+    droplet.finger_num = finger_cnt
+    return droplet, finger_img
 
 if __name__ == '__main__':
     background = cv2.imread(background_path)

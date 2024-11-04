@@ -1,4 +1,5 @@
 import json
+import math
 import cv2
 import numpy as np
 
@@ -65,22 +66,44 @@ def find_contours(img, render_img):
     cv2.drawContours(render_img, filtered_contour, -1, (0, 255, 255), 2)  # 绿色线条
     return render_img
 
-def find_finger(coords, center, radius, render_img, dist_thres = 2):
-    finger_cnt = 0
-    if_at_finger = False
-    for point in coords:
-        x, y = point[0], point[1]
-        distance = np.sqrt((x - center[0]) ** 2 + (y - center[1]) ** 2)
-        if distance > radius + dist_thres:
-            cv2.circle(render_img, (x, y), 3, (0, 0, 255), -1)
-            if not if_at_finger:
-                finger_cnt += 1
-                if_at_finger = True
-        elif distance <= radius + dist_thres:
-            if if_at_finger:
-                if_at_finger = False
-    cv2.putText(render_img, f'FINGER_NUM = {finger_cnt}', (150, 50), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 255), 2)
-    return finger_cnt, render_img
+def calc_tang(x1, y1, x2, y2, x0, y0):
+    _x1 = x1 - x0
+    _x2 = x2 - x0
+    _y1 = y1 - y0
+    _y2 = y2 - y0
+    r1 = math.hypot(_x1, _y1)
+    theta1 = math.atan2(_y1, _x1)
+    r2 = math.hypot(_x2, _y2)
+    theta2 = math.atan2(_y2, _x2)
+    delta_r = r2 - r1
+    delta_theta = theta2 - theta1
+    if delta_theta == 0: return 10000
+    derivative = min(abs(delta_r / delta_theta), 10000)
+    return derivative
+
+def find_finger(pts, center, radius, img):
+    dist_map = {}
+    tang_map = {}
+    center_x, center_y = center
+    prev_pt = (pts[-1][0], pts[-1][1])
+    for pt in pts:
+        x, y = pt
+        dist = (x - center_x) ** 2 + (y - center_y) ** 2
+        dist_map[(x, y)] = dist
+        tang_map[(x, y)] = calc_tang(x, y, prev_pt[0], prev_pt[1], center_x, center_y)
+        prev_pt = (x, y)
+
+    dist_arr = list(dist_map.values())
+    tang_arr = list(tang_map.values())
+    avg1 = np.percentile(dist_arr, 55)
+    avg2 = np.percentile(dist_arr, 30)
+    tang_avg = np.percentile(tang_arr, 60)
+
+    for k, v in tang_map.items():
+        if (v > tang_avg or dist_map[k] >= avg1) and dist_map[k] >= avg2:
+            cv2.circle(img, k, 3, (0, 0, 255), -1)
+
+    return 0, img
 
 def handle_finger(droplet: Droplet, raw_img: cv2.Mat, input: cv2.Mat, background: cv2.Mat) -> [Droplet, cv2.Mat]:
     diff1 = cv2.absdiff(raw_img, background)
@@ -90,21 +113,21 @@ def handle_finger(droplet: Droplet, raw_img: cv2.Mat, input: cv2.Mat, background
     droplet.finger_num = finger_cnt
     return droplet, finger_img
 
-if __name__ == '__main__':
-    background = cv2.imread(background_path)
-    raw_img = cv2.imread(raw_path)
-    input = cv2.imread(path)
-    dataset = json.load(open(dataset_path))
-    diff1 = cv2.absdiff(raw_img, background)
-    cv2.imshow('background', background)
-    cv2.imshow('raw', raw_img)
-    cv2.imshow('detect', input)
-    cv2.imshow('diff1', diff1)
-    diff2 = remove_color_from_image(diff1, dataset['circle_center'], dataset['circle_radius'], tolerance=tolerance)
-    cv2.imshow('diff2', diff2)
-    result = find_contours(diff2, input)
-    cv2.imshow('result', result)
-    finger_result = find_finger(dataset['contour'], dataset['circle_center'], dataset['circle_radius'], result)
-    cv2.imshow('finger_result', finger_result)
-    cv2.waitKey(0)
+# if __name__ == '__main__':
+#     background = cv2.imread(background_path)
+#     raw_img = cv2.imread(raw_path)
+#     input = cv2.imread(path)
+#     dataset = json.load(open(dataset_path))
+#     diff1 = cv2.absdiff(raw_img, background)
+#     cv2.imshow('background', background)
+#     cv2.imshow('raw', raw_img)
+#     cv2.imshow('detect', input)
+#     cv2.imshow('diff1', diff1)
+#     diff2 = remove_color_from_image(diff1, dataset['circle_center'], dataset['circle_radius'], tolerance=tolerance)
+#     cv2.imshow('diff2', diff2)
+#     result = find_contours(diff2, input)
+#     cv2.imshow('result', result)
+#     finger_result = find_finger(dataset['contour'], dataset['circle_center'], dataset['circle_radius'], result)
+#     cv2.imshow('finger_result', finger_result)
+#     cv2.waitKey(0)
 

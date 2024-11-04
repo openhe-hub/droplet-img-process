@@ -2,7 +2,6 @@ import os
 import json
 
 import cv2
-from pygments.styles.dracula import background
 
 import process
 import math_utils

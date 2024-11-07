@@ -17,7 +17,8 @@ def remove_color_from_image(image, coord, radius, tolerance=30):
     bs, gs, rs = [], [], []
     for i in range(image.shape[0]):
         for j in range(image.shape[1]):
-            if ((i-coord[1])**2 + (j-coord[0])**2)**0.5 < radius * 0.95:
+            dist = ((i-coord[1])**2 + (j-coord[0])**2)**0.5
+            if radius * 0.4 <= dist <= radius * 0.7:
                 bs.append(image[i, j][0])
                 gs.append(image[i, j][1])
                 rs.append(image[i, j][2])

@@ -64,6 +64,18 @@ def find_contours(img, render_img):
 
     # print(len(contours))
     cv2.drawContours(render_img, filtered_contour, -1, (0, 255, 255), 2)  # 绿色线条
+
+    # center = circle_center
+    # center_x, center_y = center
+    # max_dist, min_dist = -np.inf, np.inf
+    # for pt in filtered_contour:
+    #     x, y = pt
+    #     dist = np.sqrt((x - center_x) ** 2 + (y - center_y) ** 2)
+    #     max_dist = max(max_dist, dist)
+    #     min_dist = min(min_dist, dist)
+    #
+    # cv2.circle(render_img, center, int(max_dist), [0, 255, 0], thickness=2)
+
     return render_img
 
 def calc_tang(x1, y1, x2, y2, x0, y0):
@@ -95,15 +107,40 @@ def find_finger(pts, center, radius, img):
 
     dist_arr = list(dist_map.values())
     tang_arr = list(tang_map.values())
-    avg1 = np.percentile(dist_arr, 55)
-    avg2 = np.percentile(dist_arr, 30)
-    tang_avg = np.percentile(tang_arr, 60)
+    r_avg = np.percentile(dist_arr, 55)
+    r_min = np.percentile(dist_arr, 30)
+    tang_avg = np.percentile(tang_arr, 50)
+    tang_min = np.percentile(tang_arr, 30)
 
+    # filter
+    filtered_pts = []
     for k, v in tang_map.items():
-        if (v > tang_avg or dist_map[k] >= avg1) and dist_map[k] >= avg2:
-            cv2.circle(img, k, 3, (0, 0, 255), -1)
+        if ((v > tang_avg and dist_map[k] > r_min) or
+                (dist_map[k] > r_avg)):
+            filtered_pts.append(k)
 
-    return 0, img
+    # group
+    groups = []
+    curr_group = []
+    thres = 80
+    for idx, pt in enumerate(filtered_pts):
+        if idx == len(filtered_pts) - 1: continue
+        next_pt = filtered_pts[idx + 1]
+        dist = (pt[0]-next_pt[0]) ** 2 + (pt[1]-next_pt[1]) ** 2
+        if dist <= thres:
+            curr_group.append(pt)
+        else:
+            if len(curr_group) > 0:
+                if len(curr_group) >= 3:
+                    groups.append(curr_group)
+                curr_group = []
+
+    for group in groups:
+        for idx, pt in enumerate(group):
+            if idx == len(group) - 1: continue
+            cv2.line(img, pt, group[idx+1], [0,0,255], thickness=3)
+
+    return len(groups), img
 
 def handle_finger(droplet: Droplet, raw_img: cv2.Mat, input: cv2.Mat, background: cv2.Mat) -> [Droplet, cv2.Mat]:
     diff1 = cv2.absdiff(raw_img, background)

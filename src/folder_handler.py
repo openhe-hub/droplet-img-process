@@ -4,7 +4,7 @@ import json
 import cv2
 
 import process
-import math_utils
+from src.utils import math_utils
 import droplet
 
 from loguru import logger
@@ -44,8 +44,6 @@ class FolderHandler:
 
     def exec_once(self, img: cv2.Mat, idx: int, filename: str) -> Droplet:
         _diff_img = process.diff_img(img, self.background_img)
-        # color_filter = ColorFilter()
-        # filtered_img = color_filter(_diff_img)
         gray_img = process.gbr_to_gray(_diff_img)
         binary_img = process.gbr_to_binary(gray_img)
         denoised_img = process.denoise_img(binary_img)
@@ -55,18 +53,13 @@ class FolderHandler:
             logger.warning('no contour found')
             self.output_null(img, idx, filename)
             return
-        # contour_img = cv2.cvtColor(filtered_img, cv2.COLOR_GRAY2BGR)
         contour_raw_img = img.copy()
-        # cv2.drawContours(contour_img, contours, -1, (0, 255, 0), 2)
         cv2.drawContours(contour_raw_img, contours, -1, (0, 255, 0), 2)
         circle = math_utils.circle_regression(contours[0])
-        cv2.circle(contour_raw_img, circle.center, circle.radius, (0, 255, 255), 2)
-        cv2.circle(contour_raw_img, circle.center, 1, (0, 255, 255), 3)
 
         if self.debug:
             # display result
             cv2.imshow('origin', img)
-            # cv2.imshow('color_filtered', filtered_img)
             cv2.imshow('contours', contour_raw_img)
 
             cv2.waitKey(0)
@@ -75,11 +68,13 @@ class FolderHandler:
         _droplet = droplet.gen_droplet_data(contours[0], circle, idx, self.droplets, self.is_fell)
         _droplet, result_img = handle_finger(_droplet, img, contour_raw_img, self.background_img)
         droplet.save_droplet_data(_droplet, f'{self.output_folder}/params_{filename}.json')
+        droplet.draw_circle(_droplet, result_img)
         # add text
         if _droplet is not None:
-            cv2.putText(result_img, f'v={_droplet.velocity}', (50, 50), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 2)
-            cv2.putText(result_img, f'fall={_droplet.is_fell}', (50, 100), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 2)
-        #
+            cv2.putText(result_img, f'v={_droplet.velocity}', (50, 50), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 1, lineType=cv2.LINE_AA)
+            cv2.putText(result_img, f'fall={_droplet.is_fell}', (50, 100), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 1, lineType=cv2.LINE_AA)
+            cv2.putText(result_img, f'finger num={_droplet.finger_num}', (100, 50), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 255), 1, lineType=cv2.LINE_AA)
+        #f6e778d
         self.is_fell = _droplet.is_fell
         cv2.imwrite(f'{self.output_folder}/raw_{filename}.jpg', img)
         cv2.imwrite(f'{self.output_folder}/result_{filename}.jpg', result_img)

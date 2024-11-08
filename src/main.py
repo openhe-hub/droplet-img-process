@@ -29,6 +29,7 @@ def combine(path, files):
 
     combined_df = pd.concat(dfs, ignore_index=True)
     combined_df.to_csv(f'{path}/result.csv', index=False)
+    combined_df.to_excel(f'{path}/result.xlsx', index=False)
 
 
 if __name__ == '__main__':

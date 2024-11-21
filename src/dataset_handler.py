@@ -21,7 +21,7 @@ class DatasetHandler:
         return files
 
     def analyze_conditions(self, df: pd.DataFrame) -> pd.DataFrame:
-        label  = self.path.split('/')[-1]
+        label  = self.path.split('\\')[-1]
         seg = label.split('-')
         if len(seg) == 6:
             df['surface_type'] = seg[0]
@@ -31,6 +31,7 @@ class DatasetHandler:
             df['fall_point_type'] = seg[4]
 
         # init other cols
+        df['id'] = 0
         df['time'] = 0
         df['area'] = 0.0
         df['circumstance'] = 0.0
@@ -46,6 +47,7 @@ class DatasetHandler:
             file = self.files[idx]
             dataset = json.loads(open(f'{self.path}/{file}').read())
             if 'id' not in dataset: continue
+            df.loc[idx, 'id'] = dataset['id']
             df.loc[idx, 'time'] = dataset['id'] * frame_in_sec
             df.loc[idx, 'area'] = dataset['area'] * (px_in_meter ** 2)
             df.loc[idx, 'circumstance'] = dataset['circumstance'] * px_in_meter
@@ -57,8 +59,9 @@ class DatasetHandler:
         return df
 
     def filter_data(self, df: pd.DataFrame) -> pd.DataFrame:
-        df.sort_values(by=['area'], ascending=False, inplace=True)
-        df = df.head(10).copy()
+        df = df[df['circumstance'] > 0.01]
+        df= df[df['circularity'] > 0.1]
+        df= df[(df['velocity'] < 100) & (df['velocity'] > -100)]
         return df
 
     def gen_dataset(self):

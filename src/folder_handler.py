@@ -32,9 +32,11 @@ class FolderHandler:
         return jpg_files
 
     def set_background_img(self) -> cv2.Mat:
-        return process.load_img(f'{self.folder_path}/{self.files[self.background_idx]}')
+        if len(self.files) >= 1:
+            return process.load_img(f'{self.folder_path}/{self.files[self.background_idx]}')
 
     def exec(self, start_idx, end_idx):
+        if len(self.files) == 0: return
         for idx, file in enumerate(self.files):
             if idx < start_idx or idx > end_idx: continue # skip the background one
             img = process.load_img(f'{self.folder_path}/{file}')

@@ -39,6 +39,7 @@ class DatasetHandler:
         df['finger_num'] = 0.0
         df['velocity'] = 0.0
         df['circle_radius'] = 0.0
+        df['src'] = ""
 
         return df
 
@@ -48,6 +49,7 @@ class DatasetHandler:
             dataset = json.loads(open(f'{self.path}/{file}').read())
             if 'id' not in dataset: continue
             df.loc[idx, 'id'] = dataset['id']
+            df.loc[idx, 'src'] = dataset['src']
             df.loc[idx, 'time'] = dataset['id'] * frame_in_sec
             df.loc[idx, 'area'] = dataset['area'] * (px_in_meter ** 2)
             df.loc[idx, 'circumstance'] = dataset['circumstance'] * px_in_meter

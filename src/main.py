@@ -49,7 +49,7 @@ def combine2(folders):
 
 
 if __name__ == '__main__':
-    # folder_path = r'D:\records\Drop Impact on Rough Surfaces_3'
+    folder_path = r'D:\records\Drop Impact on Rough Surfaces0'
     config_path = '../config/seg_config.json'
     config = json.load(open(config_path))
     folders = list(config.keys())

@@ -21,9 +21,16 @@ def circle_regression(contour: cv2.Mat) -> RegressionCircle:
 
     xs, ys = np.array(xs),np.array(ys)
 
-    initial_guess = [0,0,0]
+    x_mean = np.mean(xs)
+    y_mean = np.mean(ys)
+    r_guess = np.mean(np.sqrt((xs - x_mean)**2 + (ys - y_mean)**2))
+    
+    initial_guess = [x_mean, y_mean, r_guess]
+
+    # initial_guess = [0,0,0]
 
     result = least_squares(residuals, initial_guess, args=(xs, ys))
+    print(result)
 
     a, b, r = result.x
     return RegressionCircle(center=(round(a), round(b)), radius=round(r))

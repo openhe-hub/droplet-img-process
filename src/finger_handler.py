@@ -4,7 +4,7 @@ import cv2
 import numpy as np
 
 from process import dilate_edges, close_edges
-from src.droplet import Droplet
+from droplet import Droplet
 
 id = 1
 raw_path = f'../assets/case{id}/raw_input.jpg'
@@ -143,10 +143,10 @@ def find_finger(pts, center, radius, img):
     return len(groups), img
 
 def handle_finger(droplet: Droplet, raw_img: cv2.Mat, input: cv2.Mat, background: cv2.Mat) -> [Droplet, cv2.Mat]:
-    diff1 = cv2.absdiff(raw_img, background)
-    diff2 = remove_color_from_image(diff1, droplet.circle_center, droplet.circle_radius, tolerance=tolerance)
-    result = find_contours(diff2, input)
-    finger_cnt, finger_img = find_finger(droplet.contour, droplet.circle_center, droplet.circle_radius, result)
+    # diff1 = cv2.absdiff(raw_img, background)
+    # diff2 = remove_color_from_image(diff1, droplet.circle_center, droplet.circle_radius, tolerance=tolerance)
+    # result = find_contours(diff2, input)
+    finger_cnt, finger_img = find_finger(droplet.contour, droplet.circle_center, droplet.circle_radius, input)
     droplet.finger_num = finger_cnt
     return droplet, finger_img
 

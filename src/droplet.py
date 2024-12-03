@@ -2,13 +2,14 @@ import numpy as np
 import cv2
 import json
 from dataclasses import dataclass, asdict, field
-from src.utils.math_utils import RegressionCircle
+from utils.math_utils import RegressionCircle
 from typing import List
 
 
 @dataclass
 class Droplet:
     id: int = 0
+    src: str = ""
     contour: List[List[int]] = field(default_factory=list)
     area: float = 0.0
     circumstance: float = 0.0
@@ -58,18 +59,23 @@ def save_droplet_data(droplet: Droplet, file_path):
     return droplet
 
 def draw_circle(droplet: Droplet, img: cv2.Mat) -> cv2.Mat:
+    height, width = img.shape[:2]
     contours = droplet.contour
     center = droplet.circle_center
     center_x, center_y = center
-    max_dist, min_dist = -np.inf, np.inf
+    max_dist, min_dist, avg_dist = -np.inf, np.inf, 0
     for pt in contours:
         x, y = pt
         dist = np.sqrt((x - center_x) ** 2 + (y - center_y) ** 2)
         max_dist = max(max_dist, dist)
         min_dist = min(min_dist, dist)
+        avg_dist = (max_dist + min_dist) // 2
+    
+    center = (min(center[0], width-1) ,min(center[1], height-1))
 
-    cv2.circle(img, center, int(max_dist), [0, 255, 0], thickness=2)
-    # cv2.circle(img, center, int(min_dist), [0, 255, 0], thickness=2)
+    print(center, avg_dist)
+
+    cv2.circle(img, center, int(avg_dist), [0, 255, 255], thickness=2)
 
 def calc_area(contour: cv2.Mat) -> float:
     return cv2.contourArea(contour)

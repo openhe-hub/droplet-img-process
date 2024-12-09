@@ -32,6 +32,7 @@ class FolderHandler:
         return jpg_files
 
     def set_background_img(self) -> cv2.Mat:
+        # print(self.files[self.background_idx])
         if len(self.files) >= 1:
             return process.load_img(f'{self.folder_path}/{self.files[self.background_idx]}')
 
@@ -59,6 +60,7 @@ class FolderHandler:
         if self.debug:
             # display result
             cv2.imshow('raw', img)
+            cv2.imshow('background', self.background_img)
             cv2.imshow('diff', _diff_img)
             cv2.imshow('gray', gray_img)
             cv2.imshow('denoised', denoised_img)
@@ -85,7 +87,6 @@ class FolderHandler:
             cv2.putText(result_img, f'v={_droplet.velocity}', (50, 50), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 1, lineType=cv2.LINE_AA)
             cv2.putText(result_img, f'fall={_droplet.is_fell}', (50, 100), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 1, lineType=cv2.LINE_AA)
             cv2.putText(result_img, f'finger num={_droplet.finger_num}', (100, 50), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 255), 1, lineType=cv2.LINE_AA)
-        #f6e778d
         self.is_fell = _droplet.is_fell
         cv2.imwrite(f'{self.output_folder}/raw_{filename}.jpg', img)
         cv2.imwrite(f'{self.output_folder}/result_{filename}.jpg', result_img)

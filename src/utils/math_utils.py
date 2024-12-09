@@ -27,10 +27,7 @@ def circle_regression(contour: cv2.Mat) -> RegressionCircle:
     
     initial_guess = [x_mean, y_mean, r_guess]
 
-    # initial_guess = [0,0,0]
-
     result = least_squares(residuals, initial_guess, args=(xs, ys))
-    print(result)
 
     a, b, r = result.x
     return RegressionCircle(center=(round(a), round(b)), radius=round(r))

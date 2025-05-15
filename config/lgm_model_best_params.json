@@ -1,0 +1,58 @@
+{
+  "circularity": {
+    "objective": "regression",  
+    "metric": "rmse",          
+    "boosting_type": "gbdt",  
+    "learning_rate": 0.07108239994306172,
+    "num_leaves": 27,
+    "max_depth": 5,
+    "feature_fraction": 0.7700593949117246,
+    "bagging_fraction": 0.7893119683960695,
+    "bagging_freq": 10,
+    "lambda_l1": 0.0026464766240688054,
+    "lambda_l2": 0.8544989714960333,
+    "min_gain_to_split": 0.0008693439462576294
+  },
+  "area": {
+    "objective": "regression",
+    "metric": "rmse",
+    "boosting_type": "gbdt",
+    "learning_rate": 0.032126899068533186,
+    "num_leaves": 98,
+    "max_depth": 5,
+    "feature_fraction": 0.8136717970644253,
+    "bagging_fraction": 0.6661690805275828,
+    "bagging_freq": 2,
+    "lambda_l1": 8.23820569162793,
+    "lambda_l2": 0.8317887931017676,
+    "min_gain_to_split": 0.009305777012159844
+  },
+  "circumstance": {
+    "objective": "regression",
+    "metric": "rmse",
+    "boosting_type": "gbdt",
+    "learning_rate": 0.13624871445268183,
+    "num_leaves": 50,
+    "max_depth": 13,
+    "feature_fraction": 0.6312381035256348,
+    "bagging_fraction": 0.6250560087139421,
+    "bagging_freq": 6,
+    "lambda_l1": 7.4251128421003845,
+    "lambda_l2": 6.235130999525957,
+    "min_gain_to_split": 0.8794619076859718
+  },
+  "finger_num": {
+    "objective": "regression",
+    "metric": "rmse",
+    "boosting_type": "gbdt",
+    "learning_rate": 0.16824320886893038,
+    "num_leaves": 77,
+    "max_depth": 8,
+    "feature_fraction": 0.795229243985457,
+    "bagging_fraction": 0.9546818348770746,
+    "bagging_freq": 4,
+    "lambda_l1": 2.0550493855964294,
+    "lambda_l2": 2.4194325080039794,
+    "min_gain_to_split": 0.023887473667017295
+  }
+}

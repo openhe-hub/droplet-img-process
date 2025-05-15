@@ -1,0 +1,7 @@
+.idea/
+.vscode/
+.venv/
+src/__pycache__/
+assets/
+scripts/pix2pix/input
+scripts/pix2pix/output

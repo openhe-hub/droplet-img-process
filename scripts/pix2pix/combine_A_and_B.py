@@ -12,9 +12,9 @@ def image_write(path_A, path_B, path_AB):
 
 
 parser = argparse.ArgumentParser('create image pairs')
-parser.add_argument('--fold_A', dest='fold_A', help='input directory for image A', type=str, default='../dataset/50kshoes_edges')
-parser.add_argument('--fold_B', dest='fold_B', help='input directory for image B', type=str, default='../dataset/50kshoes_jpg')
-parser.add_argument('--fold_AB', dest='fold_AB', help='output directory', type=str, default='../dataset/test_AB')
+parser.add_argument('--fold_A', dest='fold_A', help='input directory for image A', type=str, default='output/feature/')
+parser.add_argument('--fold_B', dest='fold_B', help='input directory for image B', type=str, default='output/label/')
+parser.add_argument('--fold_AB', dest='fold_AB', help='output directory', type=str, default='output/carbon_mixed/')
 args = parser.parse_args()
 
 for arg in vars(args):
